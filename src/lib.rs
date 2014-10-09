@@ -75,4 +75,46 @@ impl EntityManager {
 
         result
     }
+
+    pub fn find_for<T:Component+'static>(&self, entity:Uuid) -> Vec<Box<&T>> {
+        let mut result:Vec<Box<&T>> = Vec::new();
+
+        match self.component_map.find(&TypeId::of::<T>()) {
+            None => {},
+            Some(entity_map) => {
+                match entity_map.find(&entity) {
+                    None => {},
+                    Some(component_vec) => {
+                        for component in component_vec.iter() {
+                            result.push(box component.downcast_ref::<T>().unwrap())
+                        }
+                    }
+                }
+            }
+
+        }
+
+        result
+    }
+
+    pub fn find_for_mut<T:Component+'static>(&mut self, entity:Uuid) -> Vec<Box<&mut T>> {
+        let mut result:Vec<Box<&mut T>> = Vec::new();
+
+        match self.component_map.find_mut(&TypeId::of::<T>()) {
+            None => {},
+            Some(entity_map) => {
+                match entity_map.find_mut(&entity) {
+                    None => {},
+                    Some(component_vec) => {
+                        for component in component_vec.iter_mut() {
+                            result.push(box component.downcast_mut::<T>().unwrap())
+                        }
+                    }
+                }
+            }
+
+        }
+
+        result
+    }
 }
