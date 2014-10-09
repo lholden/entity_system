@@ -1,3 +1,5 @@
+#![feature(if_let)]
+
 extern crate uuid;
 
 use uuid::Uuid;
@@ -5,6 +7,7 @@ use std::intrinsics::TypeId;
 use std::collections::hashmap::HashMap;
 use std::collections::hashmap::{Vacant, Occupied};
 use std::any::{Any, AnyRefExt, AnyMutRefExt};
+
 
 pub trait Component {
     fn get_id(&self) -> Uuid;
@@ -68,12 +71,9 @@ impl EntityManager {
         where T: Component+'static
     {
         let mut result:Vec<Uuid> = Vec::new();
-        match self.components.find(&TypeId::of::<T>()) {
-            None => {},
-            Some(entity_map) => {
-                for (entity, _) in entity_map.iter() {
-                    result.push(*entity);
-                }
+        if let Some(entity_map) = self.components.find(&TypeId::of::<T>()) {
+            for (entity, _) in entity_map.iter() {
+                result.push(*entity);
             }
         }
         result
@@ -84,19 +84,16 @@ impl EntityManager {
     {
         let mut result:Vec<T> = Vec::new();
 
-        match self.components.find(&TypeId::of::<T>()) {
-            None => {},
-            Some(entity_map) => {
-                result.reserve_additional(entity_map.len());
-                for (_, component_vec) in entity_map.iter() {
-                    if component_vec.len() > 1 {
-                        result.reserve_additional(component_vec.len()-1);
-                    }
-                    for component in component_vec.iter() {
-                        result.push(component.downcast_ref::<T>().unwrap().clone());
-                    }
+        if let Some(entity_map) = self.components.find(&TypeId::of::<T>()) {
+            result.reserve_additional(entity_map.len());
+            for (_, component_vec) in entity_map.iter() {
+                if component_vec.len() > 1 {
+                    result.reserve_additional(component_vec.len()-1);
                 }
-            }                    
+                for component in component_vec.iter() {
+                    result.push(component.downcast_ref::<T>().unwrap().clone());
+                }
+            }
         }
 
         result
@@ -107,19 +104,16 @@ impl EntityManager {
     {
         let mut result:Vec<&mut T> = Vec::new();
 
-        match self.components.find_mut(&TypeId::of::<T>()) {
-            None => {},
-            Some(entity_map) => {
-                result.reserve_additional(entity_map.len());
-                for (_, component_vec) in entity_map.iter_mut() {
-                    if component_vec.len() > 1 {
-                        result.reserve_additional(component_vec.len()-1);
-                    }
-                    for component in component_vec.iter_mut() {
-                        result.push(component.downcast_mut::<T>().unwrap());
-                    } 
+        if let Some(entity_map) = self.components.find_mut(&TypeId::of::<T>()) {
+            result.reserve_additional(entity_map.len());
+            for (_, component_vec) in entity_map.iter_mut() {
+                if component_vec.len() > 1 {
+                    result.reserve_additional(component_vec.len()-1);
                 }
-            }                    
+                for component in component_vec.iter_mut() {
+                    result.push(component.downcast_mut::<T>().unwrap());
+                } 
+            }
         }
 
         result
@@ -130,20 +124,13 @@ impl EntityManager {
     {
         let mut result:Vec<T> = Vec::new();
 
-        match self.components.find(&TypeId::of::<T>()) {
-            None => {},
-            Some(entity_map) => {
-                match entity_map.find(&entity) {
-                    None => {},
-                    Some(component_vec) => {
-                        result.reserve_additional(component_vec.len());
-                        for component in component_vec.iter() {
-                            result.push(component.downcast_ref::<T>().unwrap().clone());
-                        }
-                    }
+        if let Some(entity_map) = self.components.find(&TypeId::of::<T>()) {
+            if let Some(component_vec) = entity_map.find(&entity) {
+                result.reserve_additional(component_vec.len());
+                for component in component_vec.iter() {
+                    result.push(component.downcast_ref::<T>().unwrap().clone());
                 }
             }
-
         }
 
         result
@@ -154,19 +141,12 @@ impl EntityManager {
     {
         let mut result:Vec<&mut T> = Vec::new();
 
-        match self.components.find_mut(&TypeId::of::<T>()) {
-            None => {},
-            Some(entity_map) => {
-                match entity_map.find_mut(&entity) {
-                    None => {},
-                    Some(component_vec) => {
-                        for component in component_vec.iter_mut() {
-                            result.push(component.downcast_mut::<T>().unwrap())
-                        }
-                    }
+        if let Some(entity_map) = self.components.find_mut(&TypeId::of::<T>()) {
+            if let Some(component_vec) = entity_map.find_mut(&entity) {
+                for component in component_vec.iter_mut() {
+                    result.push(component.downcast_mut::<T>().unwrap())
                 }
             }
-
         }
 
         result
