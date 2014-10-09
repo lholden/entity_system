@@ -1,0 +1,18 @@
+[root]
+name = "entity_system"
+version = "0.0.1"
+dependencies = [
+ "stainless 0.0.1 (git+https://github.com/reem/stainless.git#fe9e4e6fc0f1ad1b02d83f2ae3e645cddfbcebbf)",
+ "uuid 0.0.1 (git+https://github.com/rust-lang/uuid.git#c6159089a491ff4398c6d423263a085c95092a04)",
+]
+
+[[package]]
+name = "stainless"
+version = "0.0.1"
+source = "git+https://github.com/reem/stainless.git#fe9e4e6fc0f1ad1b02d83f2ae3e645cddfbcebbf"
+
+[[package]]
+name = "uuid"
+version = "0.0.1"
+source = "git+https://github.com/rust-lang/uuid.git#c6159089a491ff4398c6d423263a085c95092a04"
+

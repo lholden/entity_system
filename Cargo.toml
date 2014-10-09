@@ -1,0 +1,11 @@
+[package]
+
+name = "entity_system"
+version = "0.0.1"
+authors = ["Lori Holden <email@loriholden.com>"]
+
+[dependencies.uuid]
+git = "https://github.com/rust-lang/uuid.git"
+
+[dependencies.stainless]
+git = "https://github.com/reem/stainless.git"
