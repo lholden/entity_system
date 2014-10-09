@@ -19,24 +19,28 @@ pub struct EntityManager {
 }
 
 impl EntityManager {
-    pub fn new() -> EntityManager {
+    pub fn new() -> EntityManager 
+    {
         EntityManager {
             named_entities: HashMap::new(),
             components: HashMap::new(),
         }
     } 
     
-    pub fn create_entity(&self) -> Uuid {
+    pub fn create_entity(&self) -> Uuid 
+    {
         Uuid::new_v4()
     }
 
-    pub fn create_named_entity(&mut self, name: &'static str) -> Uuid {
+    pub fn create_named_entity(&mut self, name: &'static str) -> Uuid 
+    {
         let entity = self.create_entity();
         self.named_entities.insert(name, entity);
         entity
     }
 
-    pub fn get_named_entity(&self, name: &'static str) -> Result<Uuid, String> {
+    pub fn get_named_entity(&self, name: &'static str) -> Result<Uuid, String> 
+    {
         match self.named_entities.find(&name) {
             None => Err(format!("could not find entity for name: {}", name)),
             Some(entity) => Ok(*entity),
@@ -44,7 +48,9 @@ impl EntityManager {
     }
 
 
-    pub fn insert<T:Component+'static>(&mut self, entity:Uuid, component:T) {
+    pub fn insert<T>(&mut self, entity:Uuid, component:T) 
+        where T: Component+'static
+    {
         let entity_map = match self.components.entry(TypeId::of::<T>()) {
             Vacant(entry) => entry.set(HashMap::new()),
             Occupied(entry) => entry.into_mut(),
@@ -58,7 +64,9 @@ impl EntityManager {
         component_vec.push(box component as Box<Any>);
     }
 
-    pub fn find_entities<T:Component+'static>(&self) -> Vec<Uuid> {
+    pub fn find_entities<T>(&self) -> Vec<Uuid> 
+        where T: Component+'static
+    {
         let mut result:Vec<Uuid> = Vec::new();
         match self.components.find(&TypeId::of::<T>()) {
             None => {},
@@ -71,7 +79,9 @@ impl EntityManager {
         result
     }
 
-    pub fn find<T:Component+Clone+'static>(&self) -> Vec<T> {
+    pub fn find<T>(&self) -> Vec<T>
+        where T: Component+Clone+'static
+    {
         let mut result:Vec<T> = Vec::new();
 
         match self.components.find(&TypeId::of::<T>()) {
@@ -92,7 +102,9 @@ impl EntityManager {
         result
     }
     
-    pub fn find_mut<T:Component+'static>(&mut self) -> Vec<&mut T> {
+    pub fn find_mut<T>(&mut self) -> Vec<&mut T>
+        where T: Component+'static
+    {
         let mut result:Vec<&mut T> = Vec::new();
 
         match self.components.find_mut(&TypeId::of::<T>()) {
@@ -113,7 +125,9 @@ impl EntityManager {
         result
     }
 
-    pub fn find_for<T:Component+Clone+'static>(&self, entity:Uuid) -> Vec<T> {
+    pub fn find_for<T>(&self, entity:Uuid) -> Vec<T> 
+        where T: Component+Clone+'static
+    {
         let mut result:Vec<T> = Vec::new();
 
         match self.components.find(&TypeId::of::<T>()) {
@@ -135,7 +149,9 @@ impl EntityManager {
         result
     }
 
-    pub fn find_for_mut<T:Component+'static>(&mut self, entity:Uuid) -> Vec<&mut T> {
+    pub fn find_for_mut<T>(&mut self, entity:Uuid) -> Vec<&mut T>
+        where T: Component+'static
+    {
         let mut result:Vec<&mut T> = Vec::new();
 
         match self.components.find_mut(&TypeId::of::<T>()) {
