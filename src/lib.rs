@@ -39,9 +39,10 @@ impl EntityManager {
     pub fn get_named_entity(&self, name: &'static str) -> Result<Uuid, String> {
         match self.named_entities.find(&name) {
             None => Err(format!("could not find entity for name: {}", name)),
-            Some(entity) => Ok(entity.clone()),
+            Some(entity) => Ok(*entity),
         }
     }
+
 
     pub fn insert<T:Component+'static>(&mut self, entity:Uuid, component:T) {
         let entity_map = match self.components.entry(TypeId::of::<T>()) {
@@ -55,6 +56,19 @@ impl EntityManager {
         };
 
         component_vec.push(box component as Box<Any>);
+    }
+
+    pub fn find_entities<T:Component+'static>(&self) -> Vec<Uuid> {
+        let mut result:Vec<Uuid> = Vec::new();
+        match self.components.find(&TypeId::of::<T>()) {
+            None => {},
+            Some(entity_map) => {
+                for (entity, _) in entity_map.iter() {
+                    result.push(*entity);
+                }
+            }
+        }
+        result
     }
 
     pub fn find<T:Component+Clone+'static>(&self) -> Vec<T> {
@@ -144,7 +158,7 @@ impl EntityManager {
 }
 
 #[cfg(test)]
-mod test {
+mod bench {
     extern crate test;
     extern crate uuid;
     extern crate entity_system;
