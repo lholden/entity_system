@@ -31,7 +31,7 @@ There are three primary concepts:
     * e.g. "Rendering System" runs once per game-tick, iterates over all objects that have a 2D/3D representation, and renders them to screen
     * e.g. "Positioning System" runs once per game-tick, combines physics-sim data, and player input, and info about the game-HUD, to set the positions of all renderable items
 
-For more general information on Entity Systems please see http://entity-systems-wiki.t-machine.org/.
+For more information on Entity Systems please see http://entity-systems-wiki.t-machine.org/.
 
 ## Usage
 ```rust
