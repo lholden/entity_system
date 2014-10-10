@@ -39,7 +39,6 @@ For more information on Entity Systems please see http://entity-systems-wiki.t-m
 extern crate entity_system;
 
 use std::default::Default;
-use uuid::Uuid;
 
 // using the component macro:
 component!(MyComponent
@@ -50,7 +49,7 @@ component!(MyComponent
 // The above expands to:
 //
 // struct MyComponent {
-//   id: Uuid,
+//   id: entity_system::EsId,
 //   x: i32,
 //   y: i32
 // }
@@ -65,7 +64,7 @@ component!(MyComponent
 // }
 //
 // impl entity_system::Component for MyComponent {
-//   fn get_id(&self) -> Uuid {
+//   fn get_id(&self) -> entity_system::EsId {
 //     self.id
 //   }
 // }

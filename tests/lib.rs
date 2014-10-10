@@ -8,7 +8,6 @@ extern crate entity_system;
 extern crate entity_system;
 
 use std::default::Default;
-use uuid::Uuid;
 
 component!(TestComponent 
     name: &'static str

@@ -9,46 +9,21 @@ use std::collections::hashmap::HashMap;
 use std::collections::hashmap::{Vacant, Occupied};
 use std::any::{Any, AnyRefExt, AnyMutRefExt};
 
-pub trait Component {
-    fn get_id(&self) -> Uuid;
-}
-
-#[macro_export]
-macro_rules! component {
-    ($name:ident $($element: ident: $ty: ty),*) => {
-        #[deriving(Default,Clone)]
-        struct $name {
-            id: Uuid,
-            $($element: $ty),* 
-        }
-
-        impl $name {
-            pub fn new() -> $name {
-                $name {
-                    id: entity_system::generate_id(),
-                    ..Default::default()
-                }
-            }
-        }
-
-        impl entity_system::Component for $name {
-            fn get_id(&self) -> Uuid {
-                self.id
-            }
-        }
-    }
-}
-
+pub type EsId = Uuid;
 
 type ComponentVec = Vec<Box<Any>>;
-type EntityMap = HashMap<Uuid, ComponentVec>;
+type EntityMap = HashMap<EsId, ComponentVec>;
 
 pub struct EntityManager {
-    named_entities: HashMap<&'static str, Uuid>,
+    named_entities: HashMap<&'static str, EsId>,
     components: HashMap<TypeId, EntityMap>,
 }
 
-pub fn generate_id() -> Uuid
+pub trait Component {
+    fn get_id(&self) -> EsId;
+}
+
+pub fn generate_id() -> EsId
 {
     Uuid::new_v4()
 }
@@ -62,19 +37,19 @@ impl EntityManager {
         }
     } 
 
-    pub fn create_entity(&self) -> Uuid 
+    pub fn create_entity(&self) -> EsId 
     {
         generate_id()
     }
 
-    pub fn create_named_entity(&mut self, name: &'static str) -> Uuid 
+    pub fn create_named_entity(&mut self, name: &'static str) -> EsId 
     {
         let entity = self.create_entity();
         self.named_entities.insert(name, entity);
         entity
     }
 
-    pub fn get_named_entity(&self, name: &'static str) -> Result<Uuid, String> 
+    pub fn get_named_entity(&self, name: &'static str) -> Result<EsId, String> 
     {
         match self.named_entities.find(&name) {
             None => Err(format!("could not find entity for name: {}", name)),
@@ -83,7 +58,7 @@ impl EntityManager {
     }
 
 
-    pub fn insert<T>(&mut self, entity:Uuid, component:T) 
+    pub fn insert<T>(&mut self, entity:EsId, component:T) 
         where T: Component+'static
     {
         let entity_map = match self.components.entry(TypeId::of::<T>()) {
@@ -99,7 +74,7 @@ impl EntityManager {
         component_vec.push(box component as Box<Any>);
     }
 
-    pub fn find_entities<T>(&self) -> Vec<Uuid> 
+    pub fn find_entities<T>(&self) -> Vec<EsId> 
         where T: Component+'static
     {
         let mut result:Vec<Uuid> = Vec::new();
@@ -151,7 +126,7 @@ impl EntityManager {
         result
     }
 
-    pub fn find_for<T>(&self, entity:Uuid) -> Vec<T> 
+    pub fn find_for<T>(&self, entity:EsId) -> Vec<T> 
         where T: Component+Clone+'static
     {
         let mut result:Vec<T> = Vec::new();
@@ -168,7 +143,7 @@ impl EntityManager {
         result
     }
 
-    pub fn find_for_mut<T>(&mut self, entity:Uuid) -> Vec<&mut T>
+    pub fn find_for_mut<T>(&mut self, entity:EsId) -> Vec<&mut T>
         where T: Component+'static
     {
         let mut result:Vec<&mut T> = Vec::new();
@@ -185,3 +160,28 @@ impl EntityManager {
     }
 }
 
+#[macro_export]
+macro_rules! component {
+    ($name:ident $($element: ident: $ty: ty),*) => {
+        #[deriving(Default,Clone)]
+        struct $name {
+            id: entity_system::EsId,
+            $($element: $ty),* 
+        }
+
+        impl $name {
+            pub fn new() -> $name {
+                $name {
+                    id: entity_system::generate_id(),
+                    ..Default::default()
+                }
+            }
+        }
+
+        impl entity_system::Component for $name {
+            fn get_id(&self) -> entity_system::EsId {
+                self.id
+            }
+        }
+    }
+}
