@@ -1,4 +1,5 @@
 #![feature(if_let)]
+#![feature(macro_rules, phase)]
 
 extern crate uuid;
 
@@ -8,10 +9,36 @@ use std::collections::hashmap::HashMap;
 use std::collections::hashmap::{Vacant, Occupied};
 use std::any::{Any, AnyRefExt, AnyMutRefExt};
 
-
 pub trait Component {
     fn get_id(&self) -> Uuid;
 }
+
+#[macro_export]
+macro_rules! component {
+    ($name:ident $($element: ident: $ty: ty),*) => {
+        #[deriving(Default,Clone)]
+        struct $name {
+            id: Uuid,
+            $($element: $ty),* 
+        }
+
+        impl $name {
+            pub fn new() -> $name {
+                $name {
+                    id: Uuid::new_v4(),
+                    ..Default::default()
+                }
+            }
+        }
+
+        impl entity_system::Component for $name {
+            fn get_id(&self) -> Uuid {
+                self.id
+            }
+        }
+    }
+}
+
 
 type ComponentVec = Vec<Box<Any>>;
 type EntityMap = HashMap<Uuid, ComponentVec>;

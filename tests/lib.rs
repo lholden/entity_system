@@ -1,55 +1,26 @@
+#![feature(phase)]
+
 extern crate test;
 extern crate uuid;
+extern crate entity_system;
+
+#[phase(plugin)]
 extern crate entity_system;
 
 use std::default::Default;
 use uuid::Uuid;
 
-#[deriving(Default,Clone)]
-struct TestComponent {
-    id: Uuid,
-    pub name: &'static str,
-}
+component!(TestComponent 
+    name: &'static str
+)
 
-impl TestComponent {
-    pub fn new() -> TestComponent {
-        TestComponent {
-            id: Uuid::new_v4(),
-            ..Default::default()
-        }
-    }
-}
-
-impl entity_system::Component for TestComponent {
-    fn get_id(&self) -> Uuid {
-        self.id
-    }
-}
-
-#[deriving(Default,Clone)]
-struct OtherComponent {
-    id: Uuid,
-    pub name: &'static str,
-}
-
-impl OtherComponent {
-    pub fn new() -> OtherComponent {
-        OtherComponent {
-            id: Uuid::new_v4(),
-            ..Default::default()
-        }
-    }
-}
-
-impl entity_system::Component for OtherComponent {
-    fn get_id(&self) -> Uuid {
-        self.id
-    }
-}
+component!(OtherComponent 
+    name: &'static str
+)
 
 mod entity_manager {
     extern crate entity_system;
-    use entity_system::{Component};
+    use entity_system::Component;
 
     #[test]
     fn new_entities_are_unique() {
