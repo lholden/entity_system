@@ -58,7 +58,7 @@ component!(MyComponent
 // impl MyComponent {
 //   pub fn new() -> MyComponent {
 //     MyComponent {
-//       id: Uuid::new_v4(),
+//       id: entity_system::generate_id(),
 //       ..Default::default()
 //     }
 //   }

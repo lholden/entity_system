@@ -25,7 +25,7 @@ macro_rules! component {
         impl $name {
             pub fn new() -> $name {
                 $name {
-                    id: Uuid::new_v4(),
+                    id: entity_system::generate_id(),
                     ..Default::default()
                 }
             }
@@ -48,6 +48,11 @@ pub struct EntityManager {
     components: HashMap<TypeId, EntityMap>,
 }
 
+pub fn generate_id() -> Uuid
+{
+    Uuid::new_v4()
+}
+
 impl EntityManager {
     pub fn new() -> EntityManager 
     {
@@ -56,10 +61,10 @@ impl EntityManager {
             components: HashMap::new(),
         }
     } 
-    
+
     pub fn create_entity(&self) -> Uuid 
     {
-        Uuid::new_v4()
+        generate_id()
     }
 
     pub fn create_named_entity(&mut self, name: &'static str) -> Uuid 
