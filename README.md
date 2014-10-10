@@ -6,6 +6,12 @@ Check out the [Documentation](http://lholden.github.io/entity_system) for more i
 
 [![Build Status](https://travis-ci.org/lholden/entity_system.png?branch=master)](https://travis-ci.org/lholden/entity_system)
 
+## Preamble
+
+The name of this API may change to be more memorable in the near future. This API follows the Rust nightlies and may not work on older versions. The API is currently incomplete and may change without warning.
+
+I am planning to implement a simple example game demonstrating how one uses this system in the near future. Until then, the API documentation, tests, and benchmarks are the best place to learn how to use the Entity System.
+
 ## Quickstart
 
 Entity System follows the most current Rust nightly, but may work with the most recent release.
@@ -15,12 +21,6 @@ Edit your Cargo.toml file to include:
 [dependencies.entity_system]
 git = "https://github.com/lholden/entity_system.git"
 ```
-
-## Preamble
-
-The name of this API may change to be more memorable in the near future. This API follows the Rust nightlies and may not work on older versions. The API is currently incomplete and may change without warning.
-
-I am planning to implement a simple example game demonstrating how one uses this system in the near future. Until then, the API documentation, tests, and benchmarks are the best place to learn how to use the Entity System.
 
 ## Concept
 
