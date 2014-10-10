@@ -1,6 +1,6 @@
 # Entity System
 
-This is a rust based Entity System for game development and is designed around the "RDBMS with code in systems" approach. 
+This is a rust based Entity System for game development designed around the "RDBMS with code in systems" ES approach. 
 
 Check out the [Documentation](http://lholden.github.io/entity_system) for more information.
 
