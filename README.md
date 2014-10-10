@@ -7,7 +7,7 @@ This is rust based Entity System for game development and is designed around the
 Entity System follows the most current Rust nightly, but may work with the most recent release.
 
 Edit your Cargo.toml file to include:
-```
+```toml
 [dependencies.entity_system]
 git = "https://github.com/lholden/entity_system.git"
 ```
