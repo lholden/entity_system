@@ -1,5 +1,8 @@
 /*!
 
+<a href="https://github.com/lholden/entity_system"><img style="position: absolute; top: 0; left: 0; border: 0;" src="../github.png" alt="Fork me on GitHub"></a>
+<style>.sidebar { margin-top: 53px }</style>
+
 # Entity System
 
 This is a rust based Entity System for game development and is designed 

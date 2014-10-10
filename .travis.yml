@@ -1,11 +1,16 @@
 env:
   global:
-    - secure: nd0yat+mVU6ZMyw/Squ2KcWywN0VoyxoyAyC0vvwX4hQ8V794N96DgbjG37Yea8uMKmLvuJG2yIiWJMQQPWGk+QsfCrXlGw3D+YnjBoMwWrJCR/IsZaRwIZE5ijuhjt9x9e0DQhssrXPbSw7BlXiDO7PGh5VpXmKjwzSnq5eez8=
+    secure: lwbmTxwlAclwg6/8jZLf6PoBt5WfJfcjAUPd5Kj03SDq4DtVeA3A+90oT8IWWILQ+vQjzWAm6PlPjfOeF+NGjmt7XFa4wsrG15OYlxvSkxpixwr2gi1l93CidVjr1MaYdukf3kynufH82kmlGnMwGtZQRtsZVQ+NPXPBBddU1Pk=
 language: rust
 script:
-  - cargo build --verbose
-  - cargo test --verbose
-  - cargo doc --verbose --no-deps
-after_script:
-  - mv target/doc . 
-  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | cat 
+- cargo build --verbose
+- cargo test --verbose
+after_success: |
+  [ $TRAVIS_BRANCH = master ] &&
+  [ $TRAVIS_PULL_REQUEST = false ] &&
+  cargo doc &&
+  echo '<meta http-equiv=refresh content=0;url=entity_system/index.html>' > target/doc/index.html &&
+  cp github.png target/doc/ &&
+  sudo pip install ghp-import &&
+  ghp-import -n target/doc &&
+  git push -qf https://${TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages

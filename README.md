@@ -2,6 +2,10 @@
 
 This is a rust based Entity System for game development and is designed around the "RDBMS with code in systems" approach. 
 
+Check out the [Documentation](http://servo.github.io/lholden/entity_system/index.html) for more information.
+
+[![Build Status](https://travis-ci.org/lholden/entity_system.png?branch=master)](https://travis-ci.org/lholden/entity_system)
+
 ## Quickstart
 
 Entity System follows the most current Rust nightly, but may work with the most recent release.
