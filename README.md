@@ -1,6 +1,6 @@
 # Entity System
 
-This is rust based Entity System for game development and is designed around the "RDBMS with code in systems" approach. 
+This is a rust based Entity System for game development and is designed around the "RDBMS with code in systems" approach. 
 
 ## Quickstart
 
@@ -14,9 +14,9 @@ git = "https://github.com/lholden/entity_system.git"
 
 ## Preamble
 
-The name of this API may change to be more memorable in the near future. This API follows the Rust nightlies and may not work on older versions. The API is currently incomplete, missing documentation, and may change without warning.
+The name of this API may change to be more memorable in the near future. This API follows the Rust nightlies and may not work on older versions. The API is currently incomplete and may change without warning.
 
-I am planning to implement a simple example game demonstrating how one uses this system in the near future. Until then, your best example of usage will be the tests and benchmarks for the library.
+I am planning to implement a simple example game demonstrating how one uses this system in the near future. Until then, the API documentation, tests, and benchmarks are the best place to learn how to use the Entity System.
 
 ## Concept
 
@@ -45,29 +45,6 @@ component!(MyComponent
   x: i32,
   y: i32
 )
-
-// The above expands to:
-//
-// struct MyComponent {
-//   id: entity_system::EsId,
-//   x: i32,
-//   y: i32
-// }
-//
-// impl MyComponent {
-//   pub fn new() -> MyComponent {
-//     MyComponent {
-//       id: entity_system::generate_id(),
-//       ..Default::default()
-//     }
-//   }
-// }
-//
-// impl entity_system::Component for MyComponent {
-//   fn get_id(&self) -> entity_system::EsId {
-//     self.id
-//   }
-// }
 
 fn main() {
   let mut em = entity_system::EntitySystem::new();
