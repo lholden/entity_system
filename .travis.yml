@@ -2,6 +2,12 @@ env:
   global:
     - secure: PTJyR+tnEZ+jbHQ0xjgWoK8Tw6hikm1SYun8K5eeJp3yC42em8rcS0yhIbUtea7aGk4tPH+nD7lzeExvEHdae6qwLKc/bW2mx8zrlj9CZAE2JK9/OCDdNP700Jn3j+AFxWMnNatV+MefTF21PDuRfxVmip9Xo2aoMhD3+lFSUfY=
 language: rust
+before_install:
+  - sudo add-apt-repository --yes ppa:hansjorg/rust
+  - sudo add-apt-repository --yes ppa:cmrx64/cargo
+  - sudo apt-get update -qq
+install:
+  - sudo apt-get install -qq rust-nightly cargo
 script:
   - cargo build --verbose
   - cargo test --verbose
