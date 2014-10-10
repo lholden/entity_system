@@ -47,27 +47,28 @@ component!(MyComponent
   y: i32
 )
 
-// Expands out to:
-struct MyComponent {
-  id: Uuid,
-  x: i32,
-  y: i32
-}
-
-impl MyComponent {
-  pub fn new() -> MyComponent {
-    MyComponent {
-      id: Uuid::new_v4(),
-      ..Default::default()
-    }
-  }
-}
-
-impl entity_system::Component for MyComponent {
-  fn get_id(&self) -> Uuid {
-    self.id
-  }
-}
+// The above expands to:
+//
+// struct MyComponent {
+//   id: Uuid,
+//   x: i32,
+//   y: i32
+// }
+//
+// impl MyComponent {
+//   pub fn new() -> MyComponent {
+//     MyComponent {
+//       id: Uuid::new_v4(),
+//       ..Default::default()
+//     }
+//   }
+// }
+//
+// impl entity_system::Component for MyComponent {
+//   fn get_id(&self) -> Uuid {
+//     self.id
+//   }
+// }
 
 fn main() {
   let mut em = entity_system::EntitySystem::new();
