@@ -1,7 +1,6 @@
 #![feature(phase)]
 
 extern crate test;
-extern crate uuid;
 extern crate entity_system;
 
 #[phase(plugin)]
