@@ -23,6 +23,7 @@ I am planning to implement a simple example game demonstrating how one uses this
 An API that allows the programmer to keep game logic and data separate from each other. This allows one to use composition rather than inheritance for the code architecture.
 
 There are three primary concepts:
+
 1. Entity: A unique identifier that for a game object. An Entity does not contain data or code.
 2. Component: Pure data that is used to compose various discrete aspects on an entity.
 3. Processor: Monolithic opaque "Processors" that run continuously, performing global actions such as rendering or input, iterating through and modifying components, and otherwise performing the game logic.
