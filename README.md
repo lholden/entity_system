@@ -55,7 +55,7 @@ fn main() {
   let mut em = entity_system::EntitySystem::new();
   let mut cm = entity_system::ComponentSystem::new();
   let entity = entity_system::EntityManager::new();
-  em.insert(entity, MyComponent{x:0, y:0});
+  cm.insert(entity, MyComponent{x:0, y:0});
 
   // find components for an entity
   {
