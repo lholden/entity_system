@@ -63,7 +63,7 @@ fn main() {
     let immutable = cm.find_for::<MyComponent>(entity);
     immutable[0].name == component.name;
 
-    // And a mutable copy
+    // And a mutable component itself 
     let mutable = cm.find_for_mut::<MyComponent>(entity);
     mutable[0].x = 4;
     mutable[0].y = 10;
