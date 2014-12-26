@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `entity_system` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, entity_system">
+
+    <title>entity_system - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'></p>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>entity_system</a><wbr></span><span class='out-of-band'><a href='stability.html'>[stability]</a> <span id='render-detail'>
+            <a id="collapse-all" href="#">[-]
+            </a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-0' href='../src/entity_system/lib.rs.html#1-274'>[src]</a></span></h1>
+<div class='docblock'><p><a href="https://github.com/lholden/entity_system"><img style="position: absolute; top: 0; left: 0; border: 0;" src="../github.png" alt="Fork me on GitHub"></a>
+<style>.sidebar { margin-top: 53px }</style></p>
+
+<h1 id="entity-system" class='section-header'><a
+                           href="#entity-system">Entity System</a></h1>
+<p>This is a rust based Entity System for game development and is designed 
+around the &quot;RDBMS with code in systems&quot; approach. </p>
+
+<p>This API allows the programmer to keep game logic and data separate from each 
+other. This allows one to use composition rather than inheritance for the 
+code architecture.</p>
+
+<ol>
+<li>Entity: A unique identifier of type EsId for a game object. An Entity does 
+       not contain data or code.</li>
+<li>Component: Pure data that is used to compose various discrete aspects on 
+          an entity.</li>
+<li>Processor: Monolithic opaque &quot;Processors&quot; that run continuously, 
+          performing global actions such as rendering or input, iterating 
+          through and modifying components, and otherwise performing the 
+          game logic.
+
+<ul>
+<li>e.g. &quot;Physics System&quot; runs once every 10 game-ticks, iterates over all 
+                    physical objects, runs a frame of the physics 
+                    simulation</li>
+<li>e.g. &quot;Rendering System&quot; runs once per game-tick, iterates over all 
+                      objects that have a 2D/3D representation, and 
+                      renders them to screen</li>
+<li>e.g. &quot;Positioning System&quot; runs once per game-tick, combines physics-sim 
+                        data, and player input, and info about the 
+                        game-HUD, to set the positions of all 
+                        renderable items</li>
+</ul></li>
+</ol>
+
+<p>For more information on Entity Systems please see <a href="http://entity-systems-wiki.t-machine.org/">http://entity-systems-wiki.t-machine.org/</a>.</p>
+
+<h2 id="example-usage" class='section-header'><a
+                           href="#example-usage">Example Usage</a></h2><pre class='rust '>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>entity_system</span>;
+
+<span class='attribute'>#[<span class='ident'>deriving</span>(<span class='ident'>Clone</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>MyComponent</span> {
+    <span class='ident'>name</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;string</span> <span class='ident'>str</span>,
+}
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>em</span> <span class='op'>=</span> <span class='ident'>entity_system</span>::<span class='ident'>EntitySystem</span>::<span class='ident'>new</span>();
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cm</span> <span class='op'>=</span> <span class='ident'>entity_system</span>::<span class='ident'>ComponentManager</span>::<span class='ident'>new</span>();
+    <span class='kw'>let</span> <span class='ident'>entity</span> <span class='op'>=</span> <span class='ident'>em</span>.<span class='ident'>create</span>();
+    <span class='ident'>cm</span>.<span class='ident'>insert</span>(<span class='ident'>entity</span>, <span class='ident'>MyComponent</span>{<span class='ident'>name</span>: <span class='string'>&quot;hello&quot;</span>});
+
+    <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>cm</span>.<span class='ident'>find_for</span>::<span class='op'>&lt;</span><span class='ident'>MyComponent</span><span class='op'>&gt;</span>(<span class='ident'>entity</span>);
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='ident'>result</span>[<span class='number'>0</span>].<span class='ident'>name</span>);
+}
+</pre>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.ComponentManager.html'
+                               title='entity_system::ComponentManager'>ComponentManager</a></td>
+                        <td class='docblock short'><p>The ComponentManager manages the relationships between entities and components.</p>
+</td>
+                    </tr>
+                
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.EntityManager.html'
+                               title='entity_system::EntityManager'>EntityManager</a></td>
+                        <td class='docblock short'><p>Creates unique entities along and keeps tracked of named entities</p>
+</td>
+                    </tr>
+                
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.EntityMeta.html'
+                               title='entity_system::EntityMeta'>EntityMeta</a></td>
+                        <td class='docblock short'><p>A relationship between entity and component</p>
+</td>
+                    </tr>
+                </table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='type' href='type.EntityId.html'
+                               title='entity_system::EntityId'>EntityId</a></td>
+                        <td class='docblock short'></td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "entity_system";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>
