@@ -42,85 +42,110 @@ fn bench_find_in_5000(b: &mut test::Bencher) {
         }
     })
 }
-/*
+
 #[bench]
-fn bench_find(b: &mut test::Bencher) {
+fn bench_find_for_in_5000(b: &mut test::Bencher) {
     let mut em = entity_system::EntityManager::new();
-    for _ in range(0u, 1000) {
-        let entity = em.create_entity();
-        let tc = TestComponent::new();
-        em.insert(entity, tc);
-        for _ in range(0u, 10) {
-            let oc = OtherComponent::new();
-            em.insert(entity, oc);
-        }
-    }
+    let mut cm = entity_system::ComponentManager::new();
+
+    let entity = em.create();
+    cm.insert(entity, TestComponent{name: "test"});
+    cm.insert(entity, OtherComponent{name: "other"});
+
+    for _ in range(0u32, 5000) {
+        let entity = em.create();
+        cm.insert(entity, TestComponent{name: "test"});
+        cm.insert(entity, OtherComponent{name: "other"});
+    } 
 
     b.iter(|| {
-        em.find::<TestComponent>();
-    });
+        let results = cm.find_for::<OtherComponent>(entity);
+        for c in results.iter() {
+            c.name;
+        }
+    })
 }
 
 #[bench]
-fn bench_find_multiple_per_entity(b: &mut test::Bencher) {
+fn bench_get_in_5000(b: &mut test::Bencher) {
     let mut em = entity_system::EntityManager::new();
-    for _ in range(0u, 100) {
-        let entity = em.create_entity();
-        for _ in range(0u, 100) {
-            let tc = TestComponent::new();
-            em.insert(entity, tc);
-        }
-    }
+    let mut cm = entity_system::ComponentManager::new();
+
+    let entity = em.create();
+    cm.insert(entity, TestComponent{name: "test"});
+    cm.insert(entity, OtherComponent{name: "other"});
+
+    for _ in range(0u32, 5000) {
+        let entity = em.create();
+        cm.insert(entity, TestComponent{name: "test"});
+        cm.insert(entity, OtherComponent{name: "other"});
+    } 
 
     b.iter(|| {
-        em.find::<TestComponent>();
-    });
+        let c = cm.get::<OtherComponent>(entity);
+        c.name;
+    })
 }
 
 #[bench]
-fn bench_find_for(b: &mut test::Bencher) {
-
+fn bench_find_mut_in_5000(b: &mut test::Bencher) {
     let mut em = entity_system::EntityManager::new();
-    let known_entity = em.create_entity();
-    let tc = TestComponent::new();
-    em.insert(known_entity, tc);
-    for _ in range(0u, 10) {
-        let oc = OtherComponent::new();
-        em.insert(known_entity, oc);
-    }
+    let mut cm = entity_system::ComponentManager::new();
 
-    for _ in range(0u, 1000) {
-        let entity = em.create_entity();
-        let tc = TestComponent::new();
-        em.insert(entity, tc);
-        for _ in range(0u, 10) {
-            let oc = OtherComponent::new();
-            em.insert(entity, oc);
-        }
-    }
+    for _ in range(0u32, 5000) {
+        let entity = em.create();
+        cm.insert(entity, TestComponent{name: "test"});
+        cm.insert(entity, OtherComponent{name: "other"});
+    } 
 
     b.iter(|| {
-        em.find_for::<TestComponent>(known_entity);
-    });
+        let mut results = cm.find_mut::<OtherComponent>();
+        for meta in results.iter_mut() {
+            meta.component.name;
+        }
+    })
 }
 
 #[bench]
-fn bench_find_mut(b: &mut test::Bencher) {
-
+fn bench_find_for_mut_in_5000(b: &mut test::Bencher) {
     let mut em = entity_system::EntityManager::new();
+    let mut cm = entity_system::ComponentManager::new();
 
-    for _ in range(0u, 1000) {
-        let entity = em.create_entity();
-        let tc = TestComponent::new();
-        em.insert(entity, tc);
-        for _ in range(0u, 10) {
-            let oc = OtherComponent::new();
-            em.insert(entity, oc);
-        }
-    }
+    let entity = em.create();
+    cm.insert(entity, TestComponent{name: "test"});
+    cm.insert(entity, OtherComponent{name: "other"});
+
+    for _ in range(0u32, 5000) {
+        let entity = em.create();
+        cm.insert(entity, TestComponent{name: "test"});
+        cm.insert(entity, OtherComponent{name: "other"});
+    } 
 
     b.iter(|| {
-        em.find_mut::<TestComponent>();
-    });
+        let mut results = cm.find_for_mut::<OtherComponent>(entity);
+        for c in results.iter_mut() {
+            c.name;
+        }
+    })
 }
-*/
+
+#[bench]
+fn bench_get_mut_in_5000(b: &mut test::Bencher) {
+    let mut em = entity_system::EntityManager::new();
+    let mut cm = entity_system::ComponentManager::new();
+
+    let entity = em.create();
+    cm.insert(entity, TestComponent{name: "test"});
+    cm.insert(entity, OtherComponent{name: "other"});
+
+    for _ in range(0u32, 5000) {
+        let entity = em.create();
+        cm.insert(entity, TestComponent{name: "test"});
+        cm.insert(entity, OtherComponent{name: "other"});
+    } 
+
+    b.iter(|| {
+        let c = cm.get_mut::<OtherComponent>(entity);
+        c.name;
+    })
+}

@@ -53,10 +53,7 @@ fn main() {
     println!(result[0].name);
 }
 ```
-
 */
-
-#![feature(macro_rules, phase)]
 
 use std::intrinsics::TypeId;
 use std::collections::hash_map::{HashMap, Entry};
@@ -64,6 +61,7 @@ use std::any::{Any, AnyRefExt, AnyMutRefExt};
 
 pub type EntityId = u64;
 
+#[deriving(Clone)]
 pub struct EntityMeta<T> {
     pub entity: EntityId,
     pub component: T,
@@ -162,6 +160,7 @@ impl ComponentManager {
         entity_components_vec.push(v);
     }
 
+
     pub fn find<T>(&self) -> Vec<EntityMeta<T>> 
         where T: Clone+'static
     {
@@ -170,7 +169,7 @@ impl ComponentManager {
             .downcast_ref::<Vec<EntityMeta<T>>>()
             .expect("downcast to Vec<(EntityId, T)>")
             .iter()
-            .map(|meta| EntityMeta{entity: meta.entity, component:meta.component.clone()})
+            .map(|meta| meta.clone())
             .collect()
     }
 
@@ -235,6 +234,31 @@ impl ComponentManager {
             .iter_mut()
             .map(|&c| unsafe {&mut *c})
             .collect()
+    }
+
+
+    pub fn get<T>(&self, id:EntityId) -> T 
+        where T: Clone+'static
+    {
+        unsafe{&**self.entities.get(&id)
+            .expect("entity to exist")
+            .get(&TypeId::of::<T>())
+            .expect("components for T to exist")
+            .downcast_ref::<Vec<*mut T>>()
+            .expect("downcast to Vec<*mut T>")
+            .index(&0)}.clone()
+    }
+
+    pub fn get_mut<T>(&mut self, id:EntityId) -> &mut T 
+        where T: Clone+'static
+    {
+        unsafe{&mut **self.entities.get_mut(&id)
+            .expect("entity to exist")
+            .get_mut(&TypeId::of::<T>())
+            .expect("components for T to exist")
+            .downcast_mut::<Vec<*mut T>>()
+            .expect("downcast to Vec<*mut T>")
+            .index(&0)}
     }
 
     pub fn find_entities_for_type<T>(&self) -> Vec<EntityId> 

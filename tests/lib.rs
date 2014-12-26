@@ -78,7 +78,7 @@ mod test_component_manager {
             result[1].component.name = "modified";
         }
         {
-            let result2 = cm.find_mut::<TestComponent>();
+            let result2 = cm.find::<TestComponent>();
             assert_eq!("modified", result2[1].component.name);
         }
     }
@@ -135,6 +135,11 @@ mod test_component_manager {
             assert_eq!(component_entity_other.name, result[0].name);
         }
         {
+            let result = cm.find_for_mut::<TestComponent>(entity_other);
+            assert_eq!(result.len(), 1);
+            assert_eq!(component_entity_other.name, result[0].name);
+        }
+        {
             let mut result = cm.find_for_mut::<TestComponent>(entity);
             assert_eq!(result.len(), 2);
             assert_eq!(component.name, result[0].name);
@@ -142,13 +147,47 @@ mod test_component_manager {
             result[0].name = "modified";
         }
         {
-            let result = cm.find_for_mut::<TestComponent>(entity_other);
-            assert_eq!(result.len(), 1);
-            assert_eq!(component_entity_other.name, result[0].name);
+            let result = cm.find_for::<TestComponent>(entity);
+            assert_eq!("modified", result[0].name);
+        }
+    }
+
+    #[test]
+    fn gets_component_for_entity() {
+        let mut em = EntityManager::new();
+        let mut cm = ComponentManager::new();
+        let entity = em.create();
+        let entity_other = em.create();
+        let component = TestComponent{name: "one"};
+        let component2 = TestComponent{name: "two"};
+        let component_other = OtherComponent{name: "other"};
+        let component_entity_other = TestComponent{name: "other_entity"};
+
+        cm.insert(entity, component.clone());
+        cm.insert(entity, component2.clone());
+        cm.insert(entity, component_other.clone());
+        cm.insert(entity_other, component_entity_other.clone());
+
+        {
+            let result = cm.get::<TestComponent>(entity);
+            assert_eq!(component.name, result.name);
         }
         {
-            let result = cm.find_for_mut::<TestComponent>(entity);
-            assert_eq!("modified", result[0].name);
+            let result = cm.get::<TestComponent>(entity_other);
+            assert_eq!(component_entity_other.name, result.name);
+        }
+        {
+            let result = cm.get_mut::<TestComponent>(entity_other);
+            assert_eq!(component_entity_other.name, result.name);
+        }
+        {
+            let result = cm.get_mut::<TestComponent>(entity);
+            assert_eq!(component.name, result.name);
+            result.name = "modified";
+        }
+        {
+            let result = cm.get::<TestComponent>(entity);
+            assert_eq!("modified", result.name);
         }
     }
 
@@ -172,6 +211,13 @@ mod test_component_manager {
 
             let mutable = cm.find_for_mut::<TestComponent>(entity);
             assert_eq!(mutable[0].name, component.name);
+        }
+        {
+            let immutable = cm.get::<TestComponent>(entity);
+            assert_eq!(immutable.name, component.name);
+
+            let mutable = cm.get::<TestComponent>(entity);
+            assert_eq!(mutable.name, component.name);
         }
     }
 
