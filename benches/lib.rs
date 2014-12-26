@@ -1,33 +1,48 @@
-#![feature(phase)]
-
 extern crate test;
 extern crate entity_system;
 
-#[phase(plugin)]
-extern crate entity_system;
+#[deriving(Clone)]
+struct TestComponent {
+    name: &'static str,
+} 
 
-use std::default::Default;
-
-component!(TestComponent 
-    name: &'static str
-)
-
-component!(OtherComponent 
-    name: &'static str
-)
+#[deriving(Clone)]
+struct OtherComponent {
+    name: &'static str,
+}
 
 #[bench]
-fn bench_insert(b: &mut test::Bencher) {
-
+fn bench_insert_of_5000(b: &mut test::Bencher) {
     let mut em = entity_system::EntityManager::new();
-    let entity = em.create_entity();
+    let entity = em.create();
 
     b.iter(|| {
-        let tc = TestComponent::new();
-        em.insert(entity, tc);
+        let mut cm = entity_system::ComponentManager::new();
+        for _ in range(0u32, 5000) {
+            cm.insert(entity, TestComponent{name: "test"});
+        }
     });
 }
 
+#[bench]
+fn bench_find_in_5000(b: &mut test::Bencher) {
+    let mut em = entity_system::EntityManager::new();
+    let mut cm = entity_system::ComponentManager::new();
+
+    for _ in range(0u32, 5000) {
+        let entity = em.create();
+        cm.insert(entity, TestComponent{name: "test"});
+        cm.insert(entity, OtherComponent{name: "other"});
+    } 
+
+    b.iter(|| {
+        let results = cm.find::<OtherComponent>();
+        for meta in results.iter() {
+            meta.component.name;
+        }
+    })
+}
+/*
 #[bench]
 fn bench_find(b: &mut test::Bencher) {
     let mut em = entity_system::EntityManager::new();
@@ -108,3 +123,4 @@ fn bench_find_mut(b: &mut test::Bencher) {
         em.find_mut::<TestComponent>();
     });
 }
+*/

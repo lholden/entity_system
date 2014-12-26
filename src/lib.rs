@@ -38,6 +38,7 @@ For more information on Entity Systems please see http://entity-systems-wiki.t-m
 #[phase(plugin)]
 extern crate entity_system;
 
+#[deriving(Clone)]
 struct MyComponent {
     name: &'string str,
 }
