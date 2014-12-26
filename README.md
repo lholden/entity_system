@@ -41,7 +41,6 @@ For more information on Entity Systems please see http://entity-systems-wiki.t-m
 ```rust
 extern crate entity_system;
 
-// using the component macro:
 #[deriving(Clone)]
 struct MyComponent {
   x: i32,
