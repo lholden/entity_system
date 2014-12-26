@@ -39,10 +39,7 @@ For more information on Entity Systems please see http://entity-systems-wiki.t-m
 
 ## Usage
 ```rust
-#[phase(plugin)]
 extern crate entity_system;
-
-use std::default::Default;
 
 // using the component macro:
 #[deriving(Clone)]

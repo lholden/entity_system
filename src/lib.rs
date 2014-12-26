@@ -35,7 +35,6 @@ For more information on Entity Systems please see http://entity-systems-wiki.t-m
 
 ## Example Usage
 ```rust
-#[phase(plugin)]
 extern crate entity_system;
 
 #[deriving(Clone)]
