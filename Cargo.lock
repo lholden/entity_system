@@ -1,12 +1,4 @@
 [root]
 name = "entity_system"
 version = "0.0.1"
-dependencies = [
- "uuid 0.0.1 (git+https://github.com/rust-lang/uuid.git#c6159089a491ff4398c6d423263a085c95092a04)",
-]
-
-[[package]]
-name = "uuid"
-version = "0.0.1"
-source = "git+https://github.com/rust-lang/uuid.git#c6159089a491ff4398c6d423263a085c95092a04"
 

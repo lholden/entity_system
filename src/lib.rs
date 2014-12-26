@@ -1,5 +1,4 @@
 /*!
-
 <a href="https://github.com/lholden/entity_system"><img style="position: absolute; top: 0; left: 0; border: 0;" src="../github.png" alt="Fork me on GitHub"></a>
 <style>.sidebar { margin-top: 53px }</style>
 
@@ -39,72 +38,51 @@ For more information on Entity Systems please see http://entity-systems-wiki.t-m
 #[phase(plugin)]
 extern crate entity_system;
 
-use std::default::Default;
-
-// using the component macro:
-component!(MyComponent
-    x: i32,
-    y: i32
-)
+struct MyComponent {
+    name: &'string str,
+}
 
 fn main() {
     let mut em = entity_system::EntitySystem::new();
-    let entity = entity_system::EntityManager::new();
-    let component = MyComponent::new();
-    em.insert(entity, component);
+    let mut cm = entity_system::ComponentManager::new();
+    let entity = em.create();
+    cm.insert(entity, MyComponent{name: "hello"});
 
-    let immutable = em.find_for::<MyComponent>(entity);
-    immutable[0].get_id() == component.get_id();
+    let result = cm.find_for::<MyComponent>(entity);
+    println!(result[0].name);
 }
 ```
 
 */
 
-#![feature(if_let)]
 #![feature(macro_rules, phase)]
 
-extern crate uuid;
-
-use uuid::Uuid;
 use std::intrinsics::TypeId;
-use std::collections::hashmap::HashMap;
-use std::collections::hashmap::{Vacant, Occupied};
+use std::collections::hash_map::{HashMap, Entry};
 use std::any::{Any, AnyRefExt, AnyMutRefExt};
 
-/// A type for unique identifiers
-pub type EsId = Uuid;
+pub type EntityId = u64;
 
-type ComponentVec = Vec<Box<Any>>;
-type EntityMap = HashMap<EsId, ComponentVec>;
-
-
-/// Pure data that is used to compose various discrete aspects on an entity.
-pub trait Component {
-    fn get_id(&self) -> EsId;
+pub struct EntityMeta<T> {
+    pub entity: EntityId,
+    pub component: T,
 }
 
-/// Generates a unique id of type EsId
-pub fn generate_id() -> EsId
-{
-    Uuid::new_v4()
-}
-
-/// The EntityManager manages the relationships between entities and components.
 pub struct EntityManager {
-    named_entities: HashMap<&'static str, EsId>,
-    components: HashMap<TypeId, EntityMap>,
+    id_counter: EntityId,
+    named_entities: HashMap<&'static str, EntityId>,
 }
 
 impl EntityManager {
     pub fn new() -> EntityManager 
     {
         EntityManager {
+            id_counter: 0,
             named_entities: HashMap::new(),
-            components: HashMap::new(),
         }
     } 
 
-    /// Generate an anonymous entity
+    /// Generate a unique entity
     ///
     /// # Example
     /// 
@@ -112,242 +90,160 @@ impl EntityManager {
     /// let mut em = EntityManager::new();
     /// let entity = em.create_entity();
     /// ```
-    pub fn create_entity(&self) -> EsId 
+    pub fn create(&mut self) -> EntityId 
     {
-        generate_id()
+        self.id_counter += 1;
+        self.id_counter
     }
 
-    /// Generate an entity that can be looked up later
-    pub fn create_named_entity(&mut self, name: &'static str) -> EsId 
+    pub fn create_named(&mut self, name: &'static str) -> EntityId
     {
-        let entity = self.create_entity();
-        self.named_entities.insert(name, entity);
-        entity
+        let id = self.create();
+        self.named_entities.insert(name, id);
+        id
     }
 
-    /// Retrieve a named entity
-    ///
-    /// # Example
-    /// 
-    /// ```rust
-    /// let mut em = EntityManager::new();
-    /// let entity = em.create_named_entity("example");
-    /// let found = em.get_named_entity("example");
-    /// ```
-    pub fn get_named_entity(&self, name: &'static str) -> Result<EsId, String> 
+    pub fn get_named(&self, name: &'static str) -> Result<EntityId, String>
     {
-        match self.named_entities.find(&name) {
-            None => Err(format!("could not find entity for name: {}", name)),
+        match self.named_entities.get(name) {
             Some(entity) => Ok(*entity),
+            None => Err(format!("Could not find named entity: {}", name)),
         }
-    }
-
-    /// Inserts a Component into the system for the specified entity
-    pub fn insert<T>(&mut self, entity:EsId, component:T) 
-        where T: Component+'static
-    {
-        let entity_map = match self.components.entry(TypeId::of::<T>()) {
-            Vacant(entry) => entry.set(HashMap::new()),
-            Occupied(entry) => entry.into_mut(),
-        };
-
-        let component_vec = match entity_map.entry(entity) {
-            Vacant(entry) => entry.set(Vec::new()),
-            Occupied(entry) => entry.into_mut(),
-        };
-
-        component_vec.push(box component as Box<Any>);
-    }
-
-    /// Find all of the entities having Components of the specified type
-    ///
-    /// # Example
-    /// 
-    /// ```rust
-    /// let mut em = EntityManager::new();
-    /// let my_entity = em.create_entity();
-    /// let my_component = MyComponent::new();
-    ///
-    /// em.insert(my_entity, my_component);
-    ///
-    /// let entities = em.find_entities<MyComponent>();
-    /// for entity in entities.iter() {
-    ///     println!("My EsId is: {}", entity);
-    /// }
-    /// ```
-    pub fn find_entities<T>(&self) -> Vec<EsId> 
-        where T: Component+'static
-    {
-        let mut result:Vec<Uuid> = Vec::new();
-        if let Some(entity_map) = self.components.find(&TypeId::of::<T>()) {
-            for (entity, _) in entity_map.iter() {
-                result.push(*entity);
-            }
-        }
-        result
-    }
-
-    /// Retrieve a list of components for the specified type. Must be used 
-    /// before any find_*mut calls.
-    pub fn find<T>(&self) -> Vec<T>
-        where T: Component+Clone+'static
-    {
-        let mut result:Vec<T> = Vec::new();
-
-        if let Some(entity_map) = self.components.find(&TypeId::of::<T>()) {
-            result.reserve_additional(entity_map.len());
-            for (_, component_vec) in entity_map.iter() {
-                if component_vec.len() > 1 {
-                    result.reserve_additional(component_vec.len()-1);
-                }
-                for component in component_vec.iter() {
-                    result.push(component.downcast_ref::<T>().unwrap().clone());
-                }
-            }
-        }
-
-        result
-    }
-    
-    /// Retrieve a list of mutable components for the specified type
-    ///
-    /// # Example
-    /// 
-    /// ```rust
-    /// component!(MyComponent
-    ///     name: &'static str
-    /// )
-    /// let mut em = EntityManager::new();
-    /// let my_entity = em.create_entity();
-    /// let my_component = MyComponent::new();
-    ///
-    /// em.insert(my_entity, my_component);
-    ///
-    /// let components = em.find_mut<MyComponent>();
-    /// for component in components.iter() {
-    ///     println!("Changing components name from: {}", component.name);
-    ///     component.name = "A new name for all MyComponents";
-    /// }
-    /// ```
-    pub fn find_mut<T>(&mut self) -> Vec<&mut T>
-        where T: Component+'static
-    {
-        let mut result:Vec<&mut T> = Vec::new();
-
-        if let Some(entity_map) = self.components.find_mut(&TypeId::of::<T>()) {
-            result.reserve_additional(entity_map.len());
-            for (_, component_vec) in entity_map.iter_mut() {
-                if component_vec.len() > 1 {
-                    result.reserve_additional(component_vec.len()-1);
-                }
-                for component in component_vec.iter_mut() {
-                    result.push(component.downcast_mut::<T>().unwrap());
-                } 
-            }
-        }
-
-        result
-    }
-
-    /// Retrieves a list of components of the specified type for a specific 
-    /// Entity. Must be used before any find_*mut calls.
-    pub fn find_for<T>(&self, entity:EsId) -> Vec<T> 
-        where T: Component+Clone+'static
-    {
-        let mut result:Vec<T> = Vec::new();
-
-        if let Some(entity_map) = self.components.find(&TypeId::of::<T>()) {
-            if let Some(component_vec) = entity_map.find(&entity) {
-                result.reserve_additional(component_vec.len());
-                for component in component_vec.iter() {
-                    result.push(component.downcast_ref::<T>().unwrap().clone());
-                }
-            }
-        }
-
-        result
-    }
-
-    /// Retrieves a list of mutable components of the specified type for a specific Entity
-    pub fn find_for_mut<T>(&mut self, entity:EsId) -> Vec<&mut T>
-        where T: Component+'static
-    {
-        let mut result:Vec<&mut T> = Vec::new();
-
-        if let Some(entity_map) = self.components.find_mut(&TypeId::of::<T>()) {
-            if let Some(component_vec) = entity_map.find_mut(&entity) {
-                for component in component_vec.iter_mut() {
-                    result.push(component.downcast_mut::<T>().unwrap())
-                }
-            }
-        }
-
-        result
     }
 }
 
-/// A simple macro for generating a named Component struct.
-///
-/// # Arguments
-///     
-///     * The name you want your structure to have
-///     * A list of field:type pairs
-///
-/// # Example
-///
-/// ```rust 
-/// component!(MyComponent
-///     x: i32,
-///     y: i32
-/// )
-/// ```
-/// 
-/// Expands to:
-///
-/// ```rust
-/// struct MyComponent {
-///     id: entity_system::EsId,
-///     x: i32,
-///     y: i32
-/// }
-///
-/// impl MyComponent {
-///     pub fn new() -> MyComponent {
-///         MyComponent {
-///             id: entity_system::generate_id(),
-///             ..Default::default()
-///         }
-///     }
-/// }
-///
-/// impl entity_system::Component for MyComponent {
-///     fn get_id(&self) -> entity_system::EsId {
-///         self.id
-///     }
-/// }
-/// ```
-#[macro_export]
-macro_rules! component {
-    ($name:ident $($element: ident: $ty: ty),*) => {
-        #[deriving(Default,Clone)]
-        struct $name {
-            id: entity_system::EsId,
-            $($element: $ty),* 
+/// The ComponentManager manages the relationships between entities and components.
+pub struct ComponentManager {
+    components: HashMap<TypeId, Box<Any>>,
+    entities: HashMap<EntityId, HashMap<TypeId, Box<Any>>>,
+}
+
+impl ComponentManager {
+    pub fn new() -> ComponentManager
+    {
+        ComponentManager {
+            components: HashMap::new(),
+            entities: HashMap::new(),
+        }
+    } 
+
+
+    pub fn insert<T>(&mut self, id: EntityId, component: T) 
+        where T: 'static 
+    {
+        let mut components_vec = match self.components.entry(TypeId::of::<T>()) {
+            Entry::Vacant(entry) => {
+                let vec: Vec<EntityMeta<T>> = Vec::new();
+                entry.set(box vec as Box<Any>)
+            }
+            Entry::Occupied(entry) => entry.into_mut(),
+        }.downcast_mut::<Vec<EntityMeta<T>>>()
+         .expect("downcast to Vec<(EntityId, T)>");
+
+        let em = EntityMeta{entity:id, component:component};
+        components_vec.push(em);
+
+        let mut entity_components_map = match self.entities.entry(id) {
+            Entry::Vacant(entry) => entry.set(HashMap::new()),
+            Entry::Occupied(entry) => entry.into_mut(),
+        };
+
+        let mut entity_components_vec = match entity_components_map.entry(TypeId::of::<T>()) {
+            Entry::Vacant(entry) => {
+                let vec: Vec<*mut T> = Vec::new();
+                entry.set(box vec as Box<Any>)
+            }
+            Entry::Occupied(entry) => entry.into_mut(),
+        }.downcast_mut::<Vec<*mut T>>()
+         .expect("downcast to Vec<*mut T>");
+
+        let v = &mut components_vec.last_mut().expect("last component to exist").component;
+        entity_components_vec.push(v);
+    }
+
+    pub fn find<T>(&self) -> Vec<EntityMeta<T>> 
+        where T: Clone+'static
+    {
+        self.components.get(&TypeId::of::<T>())
+            .expect("components for T to exist")
+            .downcast_ref::<Vec<EntityMeta<T>>>()
+            .expect("downcast to Vec<(EntityId, T)>")
+            .iter()
+            .map(|meta| EntityMeta{entity: meta.entity, component:meta.component.clone()})
+            .collect()
+    }
+
+    pub fn find_mut<T>(&mut self) -> Vec<&mut EntityMeta<T>>
+        where T: 'static
+    {
+        self.components.get_mut(&TypeId::of::<T>())
+            .expect("components for T to exist")
+            .downcast_mut::<Vec<EntityMeta<T>>>()
+            .expect("downcast to Vec<(EntityId, &T)>")
+            .iter_mut()
+            .collect()
+    }
+
+    pub fn contains<T>(&self) -> bool
+        where T: 'static
+    {
+        self.components.contains_key(&TypeId::of::<T>())
+    }
+
+    pub fn remove<T>(&mut self) -> bool
+        where T: 'static
+    {
+        let result = self.components
+            .remove(&TypeId::of::<T>())
+            .is_some();
+
+        for (_,v) in self.entities.iter_mut() {
+            if v.contains_key(&TypeId::of::<T>()) {
+                let result2 = v.remove(&TypeId::of::<T>()).is_some();
+                debug_assert_eq!(result, result2);
+            } 
         }
 
-        impl $name {
-            pub fn new() -> $name {
-                $name {
-                    id: entity_system::generate_id(),
-                    ..Default::default()
-                }
-            }
-        }
+        result
+    }
 
-        impl entity_system::Component for $name {
-            fn get_id(&self) -> entity_system::EsId {
-                self.id
-            }
-        }
+    pub fn find_for<T>(&self, id:EntityId) -> Vec<T> 
+        where T: Clone+'static
+    {
+        self.entities.get(&id)
+            .expect("entity to exist")
+            .get(&TypeId::of::<T>())
+            .expect("components for T to exist")
+            .downcast_ref::<Vec<*mut T>>()
+            .expect("downcast to Vec<*mut T>")
+            .iter()
+            .map(|&c| unsafe {&*c}.clone() )
+            .collect()
+    }
+
+
+    pub fn find_for_mut<T>(&mut self, id:EntityId) -> Vec<&mut T>
+        where T: 'static
+    {
+        self.entities.get_mut(&id)
+            .expect("entity to exist")
+            .get_mut(&TypeId::of::<T>())
+            .expect("components for T to exist")
+            .downcast_mut::<Vec<*mut T>>()
+            .expect("downcast to Vec<*mut T>")
+            .iter_mut()
+            .map(|&c| unsafe {&mut *c})
+            .collect()
+    }
+
+    pub fn find_entities_for_type<T>(&self) -> Vec<EntityId> 
+        where T: 'static
+    {
+        self.entities
+            .iter()
+            .filter(|pair| pair.1.contains_key(&TypeId::of::<T>()) )
+            .map(|pair| *pair.0 )
+            .collect()
+
     }
 }
