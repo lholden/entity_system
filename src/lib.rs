@@ -61,12 +61,14 @@ use std::any::{Any, AnyRefExt, AnyMutRefExt};
 
 pub type EntityId = u64;
 
+/// A relationship between entity and component
 #[deriving(Clone)]
 pub struct EntityMeta<T> {
     pub entity: EntityId,
     pub component: T,
 }
 
+/// Creates unique entities along and keeps tracked of named entities
 pub struct EntityManager {
     id_counter: EntityId,
     named_entities: HashMap<&'static str, EntityId>,
@@ -87,7 +89,7 @@ impl EntityManager {
     /// 
     /// ```rust
     /// let mut em = EntityManager::new();
-    /// let entity = em.create_entity();
+    /// let entity = em.create();
     /// ```
     pub fn create(&mut self) -> EntityId 
     {
@@ -125,7 +127,6 @@ impl ComponentManager {
             entities: HashMap::new(),
         }
     } 
-
 
     pub fn insert<T>(&mut self, id: EntityId, component: T) 
         where T: 'static 
