@@ -45,34 +45,36 @@ extern crate entity_system;
 use std::default::Default;
 
 // using the component macro:
-component!(MyComponent
+#[deriving(Clone)]
+struct MyComponent {
   x: i32,
   y: i32
-)
+}
 
 fn main() {
   let mut em = entity_system::EntitySystem::new();
+  let mut cm = entity_system::ComponentSystem::new();
   let entity = entity_system::EntityManager::new();
-  let component = MyComponent::new();
-  em.insert(entity, component);
+  em.insert(entity, MyComponent{x:0, y:0});
 
   // find components for an entity
   {
     // Get an immutable copy of a component
-    let immutable = em.find_for::<MyComponent>(entity);
-    immutable[0].get_id() == component.get_id();
+    let immutable = cm.find_for::<MyComponent>(entity);
+    immutable[0].name == component.name;
 
-    let mutable = em.find_for_mut::<MyComponent>(entity);
+    // And a mutable copy
+    let mutable = cm.find_for_mut::<MyComponent>(entity);
     mutable[0].x = 4;
     mutable[0].y = 10;
   }
 
   // find components of a specific component type for all entities
   {
-    let immutable = em.find::<MyComponent>();
+    let immutable = cm.find::<MyComponent>();
     ...
 
-    let mutable = em.find_mut::<MyComponent>();
+    let mutable = cm.find_mut::<MyComponent>();
     ...
   }
 }
