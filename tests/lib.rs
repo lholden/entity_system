@@ -1,14 +1,8 @@
-#![feature(phase)]
-
-extern crate test;
-extern crate entity_system;
-
-#[phase(plugin)]
 extern crate entity_system;
 
 mod test_entity_manager {
     extern crate entity_system;
-    use entity_system::{EntityManager};
+    use entity_system::EntityManager;
 
     #[test]
     fn new_entities_are_unique() {
@@ -37,12 +31,12 @@ mod test_component_manager {
     extern crate entity_system;
     use entity_system::{EntityManager, ComponentManager};
 
-    #[deriving(Clone)]
+    #[derive(Clone)]
     pub struct TestComponent {
         pub name: &'static str,
     }
 
-    #[deriving(Clone)]
+    #[derive(Clone)]
     pub struct OtherComponent {
         pub name: &'static str,
     }

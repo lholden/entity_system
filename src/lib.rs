@@ -37,7 +37,7 @@ For more information on Entity Systems please see http://entity-systems-wiki.t-m
 ```rust
 extern crate entity_system;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 struct MyComponent {
     name: &'string str,
 }
@@ -54,14 +54,14 @@ fn main() {
 ```
 */
 
-use std::intrinsics::TypeId;
-use std::collections::hash_map::{HashMap, Entry};
-use std::any::{Any, AnyRefExt, AnyMutRefExt};
+use std::collections::hash_map::HashMap;
+use std::any::{Any, TypeId};
+use std::ops::Index;
 
 pub type EntityId = u64;
 
 /// A relationship between entity and component
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct EntityMeta<T> {
     pub entity: EntityId,
     pub component: T,
@@ -130,31 +130,21 @@ impl ComponentManager {
     pub fn insert<T>(&mut self, id: EntityId, component: T) 
         where T: 'static 
     {
-        let mut components_vec = match self.components.entry(TypeId::of::<T>()) {
-            Entry::Vacant(entry) => {
-                let vec: Vec<EntityMeta<T>> = Vec::new();
-                entry.set(box vec as Box<Any>)
-            }
-            Entry::Occupied(entry) => entry.into_mut(),
-        }.downcast_mut::<Vec<EntityMeta<T>>>()
-         .expect("downcast to Vec<(EntityId, T)>");
+        let components_vec = self.components.entry(TypeId::of::<T>())
+            .or_insert(Box::new(Vec::new() as Vec<EntityMeta<T>>))
+            .downcast_mut::<Vec<EntityMeta<T>>>()
+            .expect("downcast to Vec<EntityMeta<T>");
 
         let em = EntityMeta{entity:id, component:component};
         components_vec.push(em);
 
-        let mut entity_components_map = match self.entities.entry(id) {
-            Entry::Vacant(entry) => entry.set(HashMap::new()),
-            Entry::Occupied(entry) => entry.into_mut(),
-        };
+        let entity_components_map = self.entities.entry(id)
+            .or_insert(HashMap::new());
 
-        let mut entity_components_vec = match entity_components_map.entry(TypeId::of::<T>()) {
-            Entry::Vacant(entry) => {
-                let vec: Vec<*mut T> = Vec::new();
-                entry.set(box vec as Box<Any>)
-            }
-            Entry::Occupied(entry) => entry.into_mut(),
-        }.downcast_mut::<Vec<*mut T>>()
-         .expect("downcast to Vec<*mut T>");
+        let entity_components_vec = entity_components_map.entry(TypeId::of::<T>())
+            .or_insert(Box::new(Vec::new() as Vec<*mut T>))
+            .downcast_mut::<Vec<*mut T>>()
+            .expect("downcase to Vec<*mut T>");
 
         let v = &mut components_vec.last_mut().expect("last component to exist").component;
         entity_components_vec.push(v);
@@ -232,7 +222,7 @@ impl ComponentManager {
             .downcast_mut::<Vec<*mut T>>()
             .expect("downcast to Vec<*mut T>")
             .iter_mut()
-            .map(|&c| unsafe {&mut *c})
+            .map(|&mut c| unsafe {&mut *c})
             .collect()
     }
 
@@ -246,7 +236,7 @@ impl ComponentManager {
             .expect("components for T to exist")
             .downcast_ref::<Vec<*mut T>>()
             .expect("downcast to Vec<*mut T>")
-            .index(&0)}.clone()
+            .index(0)}.clone()
     }
 
     pub fn get_mut<T>(&mut self, id:EntityId) -> &mut T 
@@ -258,7 +248,7 @@ impl ComponentManager {
             .expect("components for T to exist")
             .downcast_mut::<Vec<*mut T>>()
             .expect("downcast to Vec<*mut T>")
-            .index(&0)}
+            .index(0)}
     }
 
     pub fn find_entities_for_type<T>(&self) -> Vec<EntityId> 
