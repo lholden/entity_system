@@ -1,3 +1,5 @@
+Please check out [Specs](https://github.com/slide-rs/specs) as I am no longer maintaining this library. :)
+
 # Entity System
 
 A Rust based Entity System designed around the "RDBMS with code in systems" ES approach. 
